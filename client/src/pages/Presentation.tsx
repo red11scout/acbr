@@ -1,4 +1,4 @@
-import { LyricLine, PresentationPlayer, Scene } from "@/components/PresentationPlayer";
+import PresentationPlayer, { LyricLine, Scene } from "@/components/PresentationPlayer";
 
 export default function Presentation() {
   // Audio Source

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Howl } from "howler";
 import { Loader2, Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { SparkleDust } from "./SparkleDust";
 
 // Types for our presentation data
 export interface LyricLine {
@@ -14,7 +15,7 @@ export interface LyricLine {
 export interface Scene {
   startTime: number;
   endTime: number;
-  background: string; // Image URL or color
+  background: string; // URL or hex color
   overlay?: React.ReactNode;
   transition?: "fade" | "slide" | "zoom";
 }
@@ -23,127 +24,132 @@ interface PresentationPlayerProps {
   audioSrc: string;
   lyrics: LyricLine[];
   scenes: Scene[];
-  onComplete?: () => void;
 }
 
-export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: PresentationPlayerProps) {
+export default function PresentationPlayer({ audioSrc, lyrics, scenes }: PresentationPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
   
   const soundRef = useRef<Howl | null>(null);
   const requestRef = useRef<number | undefined>(undefined);
-  
-  // Initialize audio
+
+  // Initialize Howler
   useEffect(() => {
-    const sound = new Howl({
+    soundRef.current = new Howl({
       src: [audioSrc],
-      html5: true, // Force HTML5 Audio to stream large files
+      html5: true,
       onload: () => {
-        setDuration(sound.duration());
-        setIsLoaded(true);
+        setDuration(soundRef.current?.duration() || 0);
+        setIsLoading(false);
       },
       onend: () => {
         setIsPlaying(false);
-        if (onComplete) onComplete();
-      },
-      onplay: () => {
-        setIsPlaying(true);
-        requestRef.current = requestAnimationFrame(updateTime);
-      },
-      onpause: () => {
-        setIsPlaying(false);
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      },
-      onstop: () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        cancelAnimationFrame(requestRef.current!);
       }
     });
 
-    soundRef.current = sound;
-
     return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      sound.unload();
+      if (soundRef.current) {
+        soundRef.current.unload();
+      }
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
     };
   }, [audioSrc]);
 
-  const updateTime = () => {
+  // Animation Loop for smooth progress
+  const animate = () => {
     if (soundRef.current && soundRef.current.playing()) {
       setCurrentTime(soundRef.current.seek());
-      requestRef.current = requestAnimationFrame(updateTime);
+      requestRef.current = requestAnimationFrame(animate);
     }
   };
 
+  useEffect(() => {
+    if (isPlaying) {
+      requestRef.current = requestAnimationFrame(animate);
+    } else {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    }
+  }, [isPlaying]);
+
   const togglePlay = () => {
-    if (!soundRef.current) return;
-    
     if (!hasStarted) {
       setHasStarted(true);
+      soundRef.current?.play();
+      setIsPlaying(true);
+      return;
     }
 
     if (isPlaying) {
-      soundRef.current.pause();
+      soundRef.current?.pause();
     } else {
-      soundRef.current.play();
+      soundRef.current?.play();
     }
+    setIsPlaying(!isPlaying);
   };
 
   const toggleMute = () => {
-    if (!soundRef.current) return;
-    soundRef.current.mute(!isMuted);
-    setIsMuted(!isMuted);
+    if (soundRef.current) {
+      soundRef.current.mute(!isMuted);
+      setIsMuted(!isMuted);
+    }
   };
 
   const restart = () => {
-    if (!soundRef.current) return;
-    soundRef.current.stop();
-    soundRef.current.play();
+    if (soundRef.current) {
+      soundRef.current.stop();
+      soundRef.current.play();
+      setIsPlaying(true);
+    }
   };
 
-  // Find current scene and lyrics
-  const currentScene = scenes.find(
-    (scene) => currentTime >= scene.startTime && currentTime < scene.endTime
-  ) || scenes[scenes.length - 1]; // Fallback to last scene if needed
-
-  const currentLyricIndex = lyrics.findIndex(
-    (line, index) => 
-      currentTime >= line.time && 
-      (index === lyrics.length - 1 || currentTime < lyrics[index + 1].time)
-  );
-  
-  const currentLyric = currentLyricIndex !== -1 ? lyrics[currentLyricIndex] : null;
-
-  // Format time for display
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!isLoaded) {
+  // Find current scene and lyric
+  const currentScene = scenes.find(
+    s => currentTime >= s.startTime && currentTime < s.endTime
+  );
+
+  const currentLyric = lyrics.find(
+    (l, i) => {
+      const nextLyric = lyrics[i + 1];
+      const endTime = nextLyric ? nextLyric.time : (l.duration ? l.time + l.duration : l.time + 4);
+      return currentTime >= l.time && currentTime < endTime;
+    }
+  );
+
+  if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background text-primary">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin" />
-          <p className="text-xl font-semibold tracking-widest">LOADING EXPERIENCE...</p>
-        </div>
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!hasStarted) {
     return (
-      <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-white text-foreground">
-        {/* Background Elements */}
-        <div className="absolute inset-0 z-0 opacity-10">
-          <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-primary blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gray-400 blur-[100px]" />
+      <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden text-white">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/assets/atlanta_sunset_intro.png" 
+            alt="Atlanta Sunset" 
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+          <SparkleDust />
         </div>
 
         <div className="z-10 flex flex-col items-center gap-8 text-center">
@@ -153,8 +159,10 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <img src="/assets/acbr_logo.png" alt="ACBR Logo" className="mb-6 h-32 w-auto md:h-40" />
-            <h2 className="text-2xl font-light tracking-widest text-gray-600 md:text-3xl">LEADERSHIP CELEBRATION</h2>
+            <div className="rounded-xl bg-white/90 p-6 backdrop-blur-sm shadow-2xl mb-6">
+              <img src="/assets/acbr_logo.png" alt="ACBR Logo" className="h-32 w-auto md:h-40" />
+            </div>
+            <h2 className="text-2xl font-light tracking-widest text-white drop-shadow-lg md:text-3xl">LEADERSHIP CELEBRATION</h2>
           </motion.div>
 
           <motion.div
@@ -165,14 +173,14 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
             <Button 
               size="lg" 
               onClick={togglePlay}
-              className="group relative h-20 w-20 rounded-full border-2 border-primary bg-white text-primary hover:bg-primary hover:text-white shadow-lg"
+              className="group relative h-20 w-20 rounded-full border-2 border-white bg-white/20 text-white hover:bg-white hover:text-primary shadow-[0_0_30px_rgba(255,255,255,0.3)] backdrop-blur-md"
             >
               <Play className="h-8 w-8 fill-current transition-transform group-hover:scale-110" />
-              <span className="absolute -inset-1 animate-ping rounded-full bg-primary opacity-20" />
+              <span className="absolute -inset-1 animate-ping rounded-full bg-white opacity-20" />
             </Button>
           </motion.div>
           
-          <p className="text-sm text-gray-500">Click to start the experience</p>
+          <p className="text-sm font-medium text-white/80 drop-shadow-md">Click to start the experience</p>
         </div>
       </div>
     );
@@ -204,6 +212,16 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Sparkle Dust Animation Layer */}
+      <SparkleDust />
+
+      {/* Persistent Subtle Logo - Top Left */}
+      <div className="absolute top-6 left-6 z-20 opacity-80 hover:opacity-100 transition-opacity duration-300">
+        <div className="rounded-lg bg-white/90 p-2 backdrop-blur-sm shadow-sm">
+          <img src="/assets/acbr_logo.png" alt="ACBR" className="h-10 w-auto" />
+        </div>
+      </div>
 
       {/* Custom Overlay Content */}
       <div className="absolute inset-0 z-10 flex items-center justify-center p-8">
@@ -285,32 +303,6 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* Floating Particles Effect (Simplified) */}
-      <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute h-2 w-2 rounded-full bg-primary/40 blur-[1px]"
-            initial={{ 
-              x: Math.random() * 100 + "%", 
-              y: "110%", 
-              opacity: 0 
-            }}
-            animate={{ 
-              y: "-10%", 
-              opacity: [0, 1, 0],
-              scale: [0.5, 1.5, 0.5]
-            }}
-            transition={{ 
-              duration: 10 + Math.random() * 20, 
-              repeat: Infinity, 
-              delay: Math.random() * 10,
-              ease: "linear"
-            }}
-          />
-        ))}
       </div>
     </div>
   );
