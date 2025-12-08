@@ -159,8 +159,8 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <div className="rounded-xl bg-white/90 p-6 backdrop-blur-sm shadow-2xl mb-6">
-              <img src="/assets/acbr_logo.png" alt="ACBR Logo" className="h-32 w-auto md:h-40" />
+            <div className="mb-6">
+              <img src="/assets/acbr_logo.png" alt="ACBR Logo" className="h-32 w-auto md:h-40 drop-shadow-2xl" />
             </div>
             <h2 className="text-2xl font-light tracking-widest text-white drop-shadow-lg md:text-3xl">LEADERSHIP CELEBRATION</h2>
           </motion.div>
