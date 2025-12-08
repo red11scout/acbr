@@ -218,13 +218,13 @@ export default function Presentation() {
     {
       startTime: 175,
       endTime: 199, // End of song
-      background: "#0C2340", // Solid Navy
+      background: "#FFFFFF", // Solid White
       overlay: (
         <div className="flex flex-col items-center justify-center text-center">
           <img src="/assets/acbr_logo.png" alt="ACBR Logo" className="mb-8 h-48 w-auto" />
           <h1 className="text-5xl font-bold text-primary md:text-7xl">Thank You, Chris</h1>
-          <h1 className="mt-4 text-5xl font-bold text-white md:text-7xl">Congratulations, Jeff</h1>
-          <p className="mt-8 text-2xl tracking-widest text-white/80">HERE'S TO 2026</p>
+          <h1 className="mt-4 text-5xl font-bold text-gray-800 md:text-7xl">Congratulations, Jeff</h1>
+          <p className="mt-8 text-2xl tracking-widest text-gray-500">HERE'S TO 2026</p>
         </div>
       )
     }

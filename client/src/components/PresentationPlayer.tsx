@@ -139,11 +139,11 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
 
   if (!hasStarted) {
     return (
-      <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-foreground">
+      <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-white text-foreground">
         {/* Background Elements */}
-        <div className="absolute inset-0 z-0 opacity-20">
+        <div className="absolute inset-0 z-0 opacity-10">
           <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-primary blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-blue-900 blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-gray-400 blur-[100px]" />
         </div>
 
         <div className="z-10 flex flex-col items-center gap-8 text-center">
@@ -151,9 +151,10 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            className="flex flex-col items-center"
           >
-            <h1 className="mb-2 text-4xl font-bold text-primary md:text-6xl">ACBR</h1>
-            <h2 className="text-2xl font-light tracking-widest md:text-3xl">LEADERSHIP CELEBRATION</h2>
+            <img src="/assets/acbr_logo.png" alt="ACBR Logo" className="mb-6 h-32 w-auto md:h-40" />
+            <h2 className="text-2xl font-light tracking-widest text-gray-600 md:text-3xl">LEADERSHIP CELEBRATION</h2>
           </motion.div>
 
           <motion.div
@@ -164,14 +165,14 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
             <Button 
               size="lg" 
               onClick={togglePlay}
-              className="group relative h-20 w-20 rounded-full border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-background"
+              className="group relative h-20 w-20 rounded-full border-2 border-primary bg-white text-primary hover:bg-primary hover:text-white shadow-lg"
             >
               <Play className="h-8 w-8 fill-current transition-transform group-hover:scale-110" />
               <span className="absolute -inset-1 animate-ping rounded-full bg-primary opacity-20" />
             </Button>
           </motion.div>
           
-          <p className="text-sm text-muted-foreground">Click to start the experience</p>
+          <p className="text-sm text-gray-500">Click to start the experience</p>
         </div>
       </div>
     );
@@ -232,9 +233,9 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.5 }}
-              className="max-w-4xl rounded-xl bg-black/30 px-8 py-4 backdrop-blur-sm"
+              className="max-w-4xl rounded-xl bg-white/90 px-8 py-4 backdrop-blur-md shadow-xl border border-gray-200"
             >
-              <p className="font-sans text-2xl font-bold leading-relaxed text-white drop-shadow-lg md:text-4xl">
+              <p className="font-sans text-2xl font-bold leading-relaxed text-gray-900 md:text-4xl">
                 {currentLyric.text}
               </p>
             </motion.div>
@@ -243,11 +244,11 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
       </div>
 
       {/* Controls & Progress */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/80 to-transparent p-6">
+      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-sm border-t border-gray-200 p-6">
         <div className="container mx-auto flex flex-col gap-2">
           {/* Progress Bar */}
           <div 
-            className="relative h-1 w-full cursor-pointer overflow-hidden rounded-full bg-white/20"
+            className="relative h-1 w-full cursor-pointer overflow-hidden rounded-full bg-gray-200"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const percent = (e.clientX - rect.left) / rect.width;
@@ -264,9 +265,9 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
           </div>
           
           {/* Control Buttons */}
-          <div className="flex items-center justify-between text-white">
+          <div className="flex items-center justify-between text-gray-700">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={togglePlay} className="hover:bg-white/10 hover:text-primary">
+              <Button variant="ghost" size="icon" onClick={togglePlay} className="hover:bg-gray-100 hover:text-primary">
                 {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
               </Button>
               <span className="text-sm font-medium tabular-nums">
@@ -275,10 +276,10 @@ export function PresentationPlayer({ audioSrc, lyrics, scenes, onComplete }: Pre
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={toggleMute} className="hover:bg-white/10 hover:text-primary">
+              <Button variant="ghost" size="icon" onClick={toggleMute} className="hover:bg-gray-100 hover:text-primary">
                 {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
               </Button>
-              <Button variant="ghost" size="icon" onClick={restart} className="hover:bg-white/10 hover:text-primary">
+              <Button variant="ghost" size="icon" onClick={restart} className="hover:bg-gray-100 hover:text-primary">
                 <RotateCcw className="h-5 w-5" />
               </Button>
             </div>
