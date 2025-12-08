@@ -41,9 +41,16 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
   // Initialize Howler
   useEffect(() => {
     console.log("Initializing audio with src:", audioSrc);
+    
+    // Cleanup previous instance if exists
+    if (soundRef.current) {
+      soundRef.current.unload();
+    }
+
     soundRef.current = new Howl({
       src: [audioSrc],
       html5: true,
+      preload: true,
       onload: () => {
         console.log("Audio loaded successfully, duration:", soundRef.current?.duration());
         setDuration(soundRef.current?.duration() || 0);
@@ -52,6 +59,7 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
       onloaderror: (id, error) => {
         console.error("Audio load error:", error);
         setIsLoading(false); // Allow UI to show even if audio fails
+        toast.error("Failed to load audio. Please refresh.");
       },
       onplayerror: (id, error) => {
         console.error("Audio play error:", error);
@@ -61,7 +69,9 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
       },
       onend: () => {
         setIsPlaying(false);
-        cancelAnimationFrame(requestRef.current!);
+        if (requestRef.current) {
+          cancelAnimationFrame(requestRef.current);
+        }
       }
     });
 
@@ -213,7 +223,7 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
       {/* Scene Renderer */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentScene?.startTime}
+          key={currentScene?.startTime || 'default'}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
@@ -226,7 +236,7 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
             <>
               <div className="absolute inset-0 bg-black/40 z-10" /> {/* Overlay for readability */}
               <img 
-                src={currentScene?.background} 
+                src={currentScene?.background || "/assets/atlanta_sunset_intro.png"} 
                 alt="Scene Background" 
                 className="h-full w-full object-cover"
               />
@@ -261,7 +271,7 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
       </div>
 
       {/* Custom Overlay Content */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center p-8">
+      <div className="absolute inset-0 z-10 flex items-center justify-center p-8 pointer-events-none">
         <AnimatePresence mode="wait">
           {currentScene?.overlay && (
             <motion.div
@@ -270,7 +280,7 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.8 }}
-              className="w-full max-w-6xl"
+              className="w-full max-w-6xl pointer-events-auto"
             >
               {currentScene.overlay}
             </motion.div>
@@ -279,7 +289,7 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
       </div>
 
       {/* Lyrics Display - Lower Third */}
-      <div className="absolute bottom-24 left-0 right-0 z-20 flex flex-col items-center px-4 text-center">
+      <div className="absolute bottom-24 left-0 right-0 z-20 flex flex-col items-center px-4 text-center pointer-events-none">
         <AnimatePresence mode="wait">
           {currentLyric && (
             <motion.div
@@ -288,7 +298,7 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.5 }}
-              className="max-w-4xl rounded-xl bg-white/90 px-8 py-4 backdrop-blur-md shadow-xl border border-gray-200"
+              className="max-w-4xl rounded-xl bg-white/90 px-8 py-4 backdrop-blur-md shadow-xl border border-gray-200 pointer-events-auto"
             >
               <p className="font-sans text-2xl font-bold leading-relaxed text-gray-900 md:text-4xl">
                 {currentLyric.text}
