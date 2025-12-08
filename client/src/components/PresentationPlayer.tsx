@@ -39,12 +39,24 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
 
   // Initialize Howler
   useEffect(() => {
+    console.log("Initializing audio with src:", audioSrc);
     soundRef.current = new Howl({
       src: [audioSrc],
       html5: true,
       onload: () => {
+        console.log("Audio loaded successfully, duration:", soundRef.current?.duration());
         setDuration(soundRef.current?.duration() || 0);
         setIsLoading(false);
+      },
+      onloaderror: (id, error) => {
+        console.error("Audio load error:", error);
+        setIsLoading(false); // Allow UI to show even if audio fails
+      },
+      onplayerror: (id, error) => {
+        console.error("Audio play error:", error);
+        soundRef.current?.once('unlock', () => {
+          soundRef.current?.play();
+        });
       },
       onend: () => {
         setIsPlaying(false);
