@@ -78,7 +78,11 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
   // Animation Loop for smooth progress
   const animate = () => {
     if (soundRef.current && soundRef.current.playing()) {
-      setCurrentTime(soundRef.current.seek());
+      const seek = soundRef.current.seek();
+      // Howler.seek() can return the Howl object itself in some cases, ensure we get a number
+      if (typeof seek === 'number') {
+        setCurrentTime(seek);
+      }
       requestRef.current = requestAnimationFrame(animate);
     }
   };
@@ -91,6 +95,11 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
         cancelAnimationFrame(requestRef.current);
       }
     }
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
   }, [isPlaying]);
 
   const togglePlay = () => {
@@ -294,19 +303,25 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
         <div className="container mx-auto flex flex-col gap-2">
           {/* Progress Bar */}
           <div 
-            className="relative h-1 w-full cursor-pointer overflow-hidden rounded-full bg-gray-200"
+            className="group relative h-2 w-full cursor-pointer rounded-full bg-gray-200 hover:h-3 transition-all duration-200"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const percent = (e.clientX - rect.left) / rect.width;
+              const newTime = percent * duration;
               if (soundRef.current) {
-                soundRef.current.seek(percent * duration);
+                soundRef.current.seek(newTime);
+                setCurrentTime(newTime); // Immediate UI update
               }
             }}
           >
-            <motion.div 
-              className="absolute bottom-0 left-0 top-0 bg-primary"
+            <div 
+              className="absolute bottom-0 left-0 top-0 rounded-full bg-primary transition-all duration-100"
               style={{ width: `${(currentTime / duration) * 100}%` }}
-              layoutId="progress"
+            />
+            {/* Handle for better visibility */}
+            <div 
+              className="absolute top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-primary shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              style={{ left: `${(currentTime / duration) * 100}%`, transform: 'translate(-50%, -50%)' }}
             />
           </div>
           
