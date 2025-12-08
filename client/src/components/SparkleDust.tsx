@@ -32,7 +32,7 @@ export function SparkleDust() {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full bg-primary/60 blur-[1px]"
+          className="absolute rounded-full bg-white/30 blur-[0.5px]"
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
@@ -40,8 +40,8 @@ export function SparkleDust() {
             height: p.size,
           }}
           animate={{
-            opacity: [0, 0.8, 0],
-            scale: [0, 1.5, 0],
+            opacity: [0, 0.4, 0],
+            scale: [0, 1.2, 0],
             y: [0, -20], // Float upward slightly
           }}
           transition={{
@@ -52,31 +52,7 @@ export function SparkleDust() {
           }}
         />
       ))}
-      {/* Add some "dazzle" stars */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={`star-${i}`}
-          className="absolute text-primary/40"
-          style={{
-            left: `${Math.random() * 90 + 5}%`,
-            top: `${Math.random() * 90 + 5}%`,
-          }}
-          animate={{
-            opacity: [0, 1, 0],
-            scale: [0.5, 1.2, 0.5],
-            rotate: [0, 180],
-          }}
-          transition={{
-            duration: 3 + Math.random() * 2,
-            repeat: Infinity,
-            delay: Math.random() * 5,
-          }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-          </svg>
-        </motion.div>
-      ))}
+
     </div>
   );
 }

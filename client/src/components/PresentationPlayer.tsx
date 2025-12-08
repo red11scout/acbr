@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Howl } from "howler";
-import { Loader2, Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Loader2, Pause, Play, RotateCcw, Share2, Volume2, VolumeX } from "lucide-react";
+import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { SparkleDust } from "./SparkleDust";
 
@@ -233,6 +234,21 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
         <div className="p-2">
           <img src="/assets/acbr_logo.png" alt="ACBR" className="h-10 w-auto drop-shadow-md" />
         </div>
+      </div>
+
+      {/* Share Button - Top Right */}
+      <div className="absolute top-6 right-6 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm"
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            toast.success("Link copied to clipboard!");
+          }}
+        >
+          <Share2 className="h-5 w-5" />
+        </Button>
       </div>
 
       {/* Custom Overlay Content */}
