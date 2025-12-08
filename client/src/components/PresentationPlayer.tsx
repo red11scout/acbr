@@ -218,8 +218,8 @@ export default function PresentationPlayer({ audioSrc, lyrics, scenes }: Present
 
       {/* Persistent Subtle Logo - Top Left */}
       <div className="absolute top-6 left-6 z-20 opacity-80 hover:opacity-100 transition-opacity duration-300">
-        <div className="rounded-lg bg-white/90 p-2 backdrop-blur-sm shadow-sm">
-          <img src="/assets/acbr_logo.png" alt="ACBR" className="h-10 w-auto" />
+        <div className="p-2">
+          <img src="/assets/acbr_logo.png" alt="ACBR" className="h-10 w-auto drop-shadow-md" />
         </div>
       </div>
 
